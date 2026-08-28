@@ -1,0 +1,113 @@
+#
+# Deployment to the Hostinger web hosting.
+#
+# On every push to main (so also on changes made through /admin/) the runner
+# builds the site and uploads dist/ via FTP to the web space. Only PHP for the
+# OAuth login runs on the server – the site itself is static.
+#
+# The upload action always transfers the whole folder and deletes nothing on
+# the server. Removed pages therefore stay around until they are deleted by
+# hand from the file manager.
+#
+# The credentials live in the GitHub environment „FTP“
+# (Settings → Environments → FTP → Environment secrets):
+#   FTPSERVER             FTP host from the hPanel, e.g. 
+#   FTPUSER               FTP user from the hPanel
+#   FTPPASSWORD           FTP password
+#   OAUTH_CLIENT_ID       client ID of the GitHub OAuth app
+#   OAUTH_CLIENT_SECRET   client secret of the GitHub OAuth app
+
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  # Allows a manual deploy through the Actions UI.
+  workflow_dispatch:
+
+# Never two deployments at once; a newer push waits for the running one.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and upload
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: FTP
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # Without a bun.lock in the repository this cannot install against a
+      # pinned state – the versions follow from package.json.
+      #
+      # Do not "fix" this by committing a bun.lock: locally the packages are
+      # installed through the internal repo proxy of the City of Vienna, whose
+      # host ends up in the lockfile as the resolved registry URL. This runner
+      # cannot reach it, so a committed lockfile breaks the deploy. The file is
+      # therefore listed in .gitignore.
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build the site
+        run: bun run build
+
+      - name: Generate OAuth credentials
+        env:
+          CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}
+        run: |
+          set -euo pipefail
+          : "${CLIENT_ID:?Secret OAUTH_CLIENT_ID fehlt in der Environment FTP}"
+          : "${CLIENT_SECRET:?Secret OAUTH_CLIENT_SECRET fehlt in der Environment FTP}"
+
+          # For single-quoted PHP strings only \ and ' have to be escaped. The
+          # values are never printed in the process.
+          id=${CLIENT_ID//\\/\\\\}; id=${id//\'/\\\'}
+          secret=${CLIENT_SECRET//\\/\\\\}; secret=${secret//\'/\\\'}
+
+          cat > dist/oauth/config.php <<EOF
+          <?php
+          // Generated from the GitHub secrets on every deploy – do not edit by
+          // hand.
+          return [
+              'client_id' => '${id}',
+              'client_secret' => '${secret}',
+          ];
+          EOF
+
+          # Syntax check in case the runner ships PHP – otherwise just a note.
+          if command -v php >/dev/null; then
+            php -l dist/oauth/config.php
+          else
+            echo "PHP auf dem Runner nicht verfügbar – Syntaxprüfung übersprungen."
+          fi
+
+          # The template is pure documentation and has no business on the
+          # server; the upload action has no exclusion list of its own.
+          rm -f dist/oauth/config.example.php
+
+      - name: Upload via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ vars.FTPSERVER }}
+          protocol: ftps
+          username: ${{ vars.FTPUSER }}
+          password: ${{ secrets.FTPPASSWORD }}
+          local-dir: ./dist/
+          server-dir: /
+          # The action remembers the last state in this file and only transfers
+          # the differences next time.
+          state-name: .ftp-deploy-sync-state.json
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            oauth/config.example.php
