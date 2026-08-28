@@ -1,0 +1,529 @@
+#
+# Local development:
+#   just                  starts the dev server and the CMS proxy together
+#   Browser:              http://localhost:4321/admin/
+# Alternatively by hand: `bun run dev` and `bun run cms` in two terminals.
+# With `local_backend: true` this writes straight to the file system –
+# no git authentication involved.
+#
+# Every field here has a counterpart in the zod schema in
+# src/content.config.ts. When one changes, the other has to change with it.
+#
+# The labels, hints and descriptions below are the editor-facing UI and stay
+# in German; only the technical field names are English.
+
+backend:
+  name: github
+  repo: stefanschlipfi/sw-physio.at
+  # OAuth proxy on the same domain (public/oauth/index.php). Only the login
+  # goes through it – saving happens directly via the GitHub API in the browser.
+  base_url: https://sw-physio.at
+  auth_endpoint: oauth/
+
+  branch: main
+  commit_messages:
+    create: 'CMS: {{collection}} „{{slug}}“ angelegt'
+    update: 'CMS: {{collection}} „{{slug}}“ aktualisiert'
+    delete: 'CMS: {{collection}} „{{slug}}“ gelöscht'
+    uploadMedia: 'CMS: Medium {{path}} hochgeladen'
+    deleteMedia: 'CMS: Medium {{path}} gelöscht'
+
+# Local backend for development (ignored in production).
+local_backend: false
+
+locale: de
+site_url: https://sw-physio.at
+display_url: https://sw-physio.at
+
+media_folder: public/images/uploads
+public_folder: /images/uploads
+
+collections:
+  # ------------------------------------------------------------- Single pages
+  - name: pages
+    label: Seiten
+    description: Die Texte der einzelnen Seiten. Behandlungstechniken, Preise,
+      Fragen und Praxisbilder werden weiter unten gepflegt.
+    files:
+      # ------------------------------------------------------------- Home
+      - name: home
+        label: Startseite
+        file: src/content/home/index.md
+        format: yaml-frontmatter
+        preview: false
+        fields:
+          - name: hero
+            label: Titelbild-Bereich
+            widget: object
+            fields:
+              - name: image
+                label: Titelbild
+                widget: image
+                required: false
+                choose_url: false
+                hint: Breites Querformat, mindestens 2000 px breit.
+              - { name: eyebrow, label: Kleine Zeile darüber, widget: string, required: false }
+              - { name: title, label: Große Überschrift, widget: string }
+              - { name: subtitle, label: Untertitel, widget: string, required: false }
+          - name: welcome
+            label: Begrüßung
+            widget: object
+            fields:
+              - { name: eyebrow, label: Kleine Zeile darüber, widget: string, required: false }
+              - { name: title, label: Überschrift, widget: string }
+              - { name: text, label: Text, widget: text, required: false }
+          - name: teasers
+            label: Verweis-Kacheln
+            label_singular: Kachel
+            widget: list
+            collapsed: false
+            min: 1
+            max: 6
+            summary: '{{fields.title}}'
+            hint: Bild und Textkasten wechseln sich Zeile für Zeile die Seite ab.
+            fields:
+              - { name: title, label: Überschrift, widget: string }
+              - name: subtitle
+                label: Zweite Zeile (orange)
+                widget: string
+                required: false
+              - name: image
+                label: Bild
+                widget: image
+                choose_url: false
+                media_library:
+                  config:
+                    max_file_size: 5000000
+              - name: imageAlt
+                label: Bildbeschreibung (Alt-Text)
+                widget: string
+                required: false
+                hint: Kurze Beschreibung für Screenreader.
+              - name: href
+                label: Ziel-Adresse
+                widget: string
+                default: /angebote/
+                pattern: ['^/.*$', 'Muss mit / beginnen, z. B. /angebote/']
+              - { name: linkLabel, label: Beschriftung des Buttons, widget: string, default: Mehr }
+          - name: faq
+            label: 'Abschnitt „Häufige Fragen“'
+            widget: object
+            hint: Welche Fragen erscheinen, wird im Bereich „Häufige Fragen“ gepflegt.
+            fields:
+              - { name: eyebrow, label: Kleine Zeile darüber, widget: string, required: false }
+              - { name: title, label: Überschrift, widget: string }
+              - { name: text, label: Text, widget: text, required: false }
+          - name: gallery
+            label: 'Abschnitt „Meine Praxis“'
+            widget: object
+            hint: Die Bilder kommen aus dem Bereich „Praxis-Bilder“.
+            fields:
+              - { name: eyebrow, label: Kleine Zeile darüber, widget: string, required: false }
+              - { name: title, label: Überschrift, widget: string }
+              - { name: text, label: Text, widget: text, required: false }
+
+      # ------------------------------------------------------------ About
+      - name: about
+        label: Über mich
+        file: src/content/about/index.md
+        format: yaml-frontmatter
+        preview: false
+        fields:
+          - name: hero
+            label: Titelbild-Bereich
+            widget: object
+            fields:
+              - { name: image, label: Titelbild, widget: image, required: false, choose_url: false }
+              - { name: eyebrow, label: Kleine Zeile darüber, widget: string, required: false }
+              - { name: title, label: Große Überschrift, widget: string }
+              - { name: subtitle, label: Untertitel, widget: string, required: false }
+          - name: intro
+            label: Vorstellung
+            widget: object
+            fields:
+              - { name: eyebrow, label: Kleine Zeile darüber, widget: string, required: false }
+              - { name: title, label: Überschrift, widget: string }
+              - { name: text, label: Text, widget: text, required: false }
+              - { name: image, label: Bild, widget: image, required: false, choose_url: false }
+              - { name: imageAlt, label: Bildbeschreibung (Alt-Text), widget: string, required: false }
+          - name: resume
+            label: Lebenslauf
+            widget: object
+            fields:
+              - { name: title, label: Überschrift, widget: string }
+              - { name: image, label: Bild, widget: image, required: false, choose_url: false }
+              - { name: imageAlt, label: Bildbeschreibung (Alt-Text), widget: string, required: false }
+              - name: entries
+                label: Stationen
+                label_singular: Station
+                widget: list
+                collapsed: false
+                summary: '{{fields.period}} – {{fields.description}}'
+                fields:
+                  - name: period
+                    label: Zeitraum
+                    widget: string
+                    hint: 'z. B. „2021-2024“ oder „2025-aktuell“.'
+                  - { name: description, label: Beschreibung, widget: text }
+
+      # ----------------------------------------------------------- Offers
+      - name: offers
+        label: Angebote
+        file: src/content/offers/index.md
+        format: yaml-frontmatter
+        preview: false
+        description: Nur die Überschriften der Seite. Die Techniken und Preise
+          selbst stehen in den Bereichen „Behandlungstechniken“ und „Preise“.
+        fields:
+          - name: hero
+            label: Titelbild-Bereich
+            widget: object
+            fields:
+              - { name: image, label: Titelbild, widget: image, required: false, choose_url: false }
+              - { name: eyebrow, label: Kleine Zeile darüber, widget: string, required: false }
+              - { name: title, label: Große Überschrift, widget: string }
+              - { name: subtitle, label: Untertitel, widget: string, required: false }
+          - name: services
+            label: 'Abschnitt „Behandlungstechniken“'
+            widget: object
+            fields:
+              - { name: eyebrow, label: Kleine Zeile darüber, widget: string, required: false }
+              - { name: title, label: Überschrift, widget: string }
+              - { name: text, label: Text, widget: text, required: false }
+          - name: prices
+            label: 'Abschnitt „Preise“'
+            widget: object
+            fields:
+              - { name: eyebrow, label: Kleine Zeile darüber, widget: string, required: false }
+              - { name: title, label: Überschrift, widget: string }
+              - { name: text, label: Text, widget: text, required: false }
+
+      # ---------------------------------------------------------- Fit2me
+      - name: fit2me
+        label: Fit2me
+        file: src/content/fit2me/index.md
+        format: yaml-frontmatter
+        preview: false
+        fields:
+          - name: hero
+            label: Titelbild-Bereich
+            widget: object
+            fields:
+              - { name: image, label: Titelbild, widget: image, required: false, choose_url: false }
+              - { name: eyebrow, label: Kleine Zeile darüber, widget: string, required: false }
+              - { name: title, label: Große Überschrift, widget: string }
+              - { name: subtitle, label: Untertitel, widget: string, required: false }
+          - name: intro
+            label: Vorstellung
+            widget: object
+            fields:
+              - { name: title, label: Überschrift, widget: string }
+              - { name: text, label: Text, widget: text, required: false }
+              - { name: image, label: Bild, widget: image, required: false, choose_url: false }
+              - { name: imageAlt, label: Bildbeschreibung (Alt-Text), widget: string, required: false }
+          - name: gallery
+            label: Bildergalerie
+            label_singular: Foto
+            widget: list
+            required: false
+            collapsed: false
+            summary: '{{fields.imageAlt}}'
+            fields:
+              - name: image
+                label: Foto
+                widget: image
+                choose_url: false
+                media_library:
+                  config:
+                    max_file_size: 5000000
+              - { name: imageAlt, label: Bildbeschreibung (Alt-Text), widget: string, required: false }
+          - name: partner
+            label: Verweis auf Fit2me
+            widget: object
+            fields:
+              - { name: label, label: Beschriftung, widget: string, default: Zur Website von Fit2me }
+              - name: url
+                label: Adresse der Website
+                widget: string
+                required: false
+                pattern: ['^https?://.+', 'Bitte eine vollständige Adresse mit https:// angeben']
+
+      # --------------------------------------------------------- Contact
+      - name: contact
+        label: Kontakt
+        file: src/content/contact/index.md
+        format: yaml-frontmatter
+        preview: false
+        description: Adresse, Telefon und E-Mail stehen im Code
+          (src/lib/site.ts). Hier stehen die Überschriften und die Karten.
+        fields:
+          - name: hero
+            label: Titelbild-Bereich
+            widget: object
+            fields:
+              - { name: image, label: Titelbild, widget: image, required: false, choose_url: false }
+              - { name: eyebrow, label: Kleine Zeile darüber, widget: string, required: false }
+              - { name: title, label: Große Überschrift, widget: string }
+              - { name: subtitle, label: Untertitel, widget: string, required: false }
+          - name: intro
+            label: Einleitung
+            widget: object
+            fields:
+              - { name: eyebrow, label: Kleine Zeile darüber, widget: string, required: false }
+              - { name: title, label: Überschrift, widget: string }
+              - { name: text, label: Text, widget: text, required: false }
+          - name: locations
+            label: Standorte
+            label_singular: Standort
+            widget: list
+            collapsed: false
+            min: 1
+            summary: '{{fields.title}} – {{fields.city}}'
+            fields:
+              - { name: title, label: Überschrift, widget: string }
+              - { name: street, label: Straße und Hausnummer, widget: string }
+              - name: postalCode
+                label: Postleitzahl
+                widget: string
+                pattern: ['^\d{4}$', 'Bitte vier Ziffern angeben, z. B. 3130']
+              - { name: city, label: Ort, widget: string }
+              - name: note
+                label: Hinweis
+                widget: string
+                required: false
+                hint: 'z. B. „Parkplätze direkt vor dem Haus“.'
+              - name: mapUrl
+                label: Google-Maps-Einbettung
+                widget: string
+                required: false
+                pattern:
+                  - '^https://www\.google\.com/maps/embed.+'
+                  - 'Bitte die Adresse aus „Karte teilen → Karte einbetten“ verwenden'
+                hint: In Google Maps auf „Teilen → Karte einbetten“ klicken und
+                  nur die Adresse aus dem src="…" hier einfügen.
+
+  # ------------------------------------------------------------------ Services
+  - name: services
+    label: Behandlungstechniken
+    label_singular: Technik
+    description: Die Techniken auf der Seite „Angebote“.
+    folder: src/content/services
+    create: true
+    delete: true
+    format: yaml-frontmatter
+    slug: '{{slug}}'
+    identifier_field: title
+    summary: '{{order}} · {{title}}'
+    sortable_fields: [order, title]
+    fields:
+      - { name: title, label: Bezeichnung, widget: string }
+      - name: description
+        label: Beschreibung
+        widget: text
+        hint: Zwei bis drei Sätze – erscheint auf der Kachel.
+      - name: image
+        label: Bild
+        widget: image
+        required: false
+        choose_url: false
+        media_library:
+          config:
+            max_file_size: 5000000
+        hint: Querformat funktioniert am besten. Ohne Bild zeigt die Kachel nur Text.
+      - { name: imageAlt, label: Bildbeschreibung (Alt-Text), widget: string, required: false }
+      - name: order
+        label: Reihenfolge
+        widget: number
+        value_type: int
+        default: 100
+        hint: Kleinere Zahl = weiter vorne.
+
+  # -------------------------------------------------------------------- Prices
+  - name: prices
+    label: Preise
+    label_singular: Preisangebot
+    description: Die Preiskarten auf der Seite „Angebote“.
+    folder: src/content/prices
+    create: true
+    delete: true
+    format: yaml-frontmatter
+    slug: '{{slug}}'
+    identifier_field: title
+    summary: '{{durationMinutes}} min · {{title}} ({{price}} €)'
+    sortable_fields: [order, price, durationMinutes]
+    fields:
+      - { name: title, label: Bezeichnung, widget: string }
+      - name: durationMinutes
+        label: Dauer in Minuten
+        widget: number
+        value_type: int
+        min: 1
+        default: 45
+      - name: price
+        label: Preis in Euro
+        widget: number
+        value_type: float
+        min: 0
+        step: 0.5
+        hint: Punkt als Dezimaltrennzeichen, z. B. 72.5
+      - name: description
+        label: Beschreibung
+        widget: text
+        required: false
+      - name: highlighted
+        label: Hervorheben
+        widget: boolean
+        default: false
+        hint: Die Karte bekommt einen helleren Rahmen.
+      - name: order
+        label: Reihenfolge
+        widget: number
+        value_type: int
+        default: 100
+
+  # ----------------------------------------------------------------------- FAQ
+  - name: faq
+    label: Häufige Fragen
+    label_singular: Frage
+    description: Die aufklappbaren Fragen auf der Startseite.
+    folder: src/content/faq
+    create: true
+    delete: true
+    format: yaml-frontmatter
+    slug: '{{slug}}'
+    identifier_field: question
+    summary: '{{order}} · {{question}}'
+    sortable_fields: [order, question]
+    fields:
+      - { name: question, label: Frage, widget: string }
+      - name: answer
+        label: Antwort
+        widget: markdown
+        hint: Listen und Links sind möglich.
+      - name: order
+        label: Reihenfolge
+        widget: number
+        value_type: int
+        default: 100
+        hint: Kleinere Zahl = weiter oben.
+
+  # ------------------------------------------------------------------- Gallery
+  - name: gallery
+    label: Praxis-Bilder
+    label_singular: Foto
+    description: Die Bilder im Karussell „Meine Praxis“ auf der Startseite.
+    folder: src/content/gallery
+    create: true
+    delete: true
+    format: yaml-frontmatter
+    slug: '{{slug}}'
+    identifier_field: title
+    summary: '{{order}} · {{title}}'
+    sortable_fields: [order, title]
+    fields:
+      - { name: title, label: Titel, widget: string }
+      - name: image
+        label: Foto
+        widget: image
+        choose_url: false
+        media_library:
+          config:
+            max_file_size: 5000000
+        hint: Querformat funktioniert am besten. Bitte vorher auf max. 2000 px Breite verkleinern.
+      - name: imageAlt
+        label: Bildbeschreibung (Alt-Text)
+        widget: string
+        required: false
+        hint: Kurze Beschreibung für Screenreader. Ohne Angabe wird der Titel verwendet.
+      - { name: description, label: Bildunterschrift, widget: text, required: false }
+      - name: order
+        label: Reihenfolge
+        widget: number
+        value_type: int
+        default: 100
+
+  # ------------------------------------------------------------- Opening hours
+  - name: openingHours
+    label: Öffnungszeiten
+    label_singular: Wochentag
+    description: Je ein Eintrag pro Wochentag. Bitte keine Tage anlegen oder löschen.
+    folder: src/content/opening-hours
+    create: false
+    delete: false
+    format: yaml-frontmatter
+    identifier_field: day
+    summary: '{{order}} · {{day}}'
+    sortable_fields: [order]
+    fields:
+      - name: day
+        label: Wochentag
+        widget: select
+        options: [Montag, Dienstag, Mittwoch, Donnerstag, Freitag, Samstag, Sonntag]
+      - name: order
+        label: Position (Mo = 1 … So = 7)
+        widget: number
+        value_type: int
+        min: 1
+        max: 7
+      - name: closed
+        label: Geschlossen
+        widget: boolean
+        default: false
+      - name: from
+        label: Geöffnet ab
+        widget: string
+        required: false
+        pattern: ['^([01][0-9]|2[0-3]):[0-5][0-9]$', 'Bitte im Format HH:MM angeben']
+        hint: 'Format HH:MM, z. B. 10:00. An einem geschlossenen Tag wird die Zeit
+          ignoriert und muss nicht gelöscht werden.'
+      - name: until
+        label: Geöffnet bis
+        widget: string
+        required: false
+        pattern: ['^([01][0-9]|2[0-3]):[0-5][0-9]$', 'Bitte im Format HH:MM angeben']
+        hint: 'Format HH:MM, z. B. 15:00.'
+      - name: note
+        label: Hinweis
+        widget: string
+        required: false
+        hint: 'z. B. „Termine nach Vereinbarung“.'
+
+  # --------------------------------------------------------------------- Legal
+  - name: legal
+    label: Rechtliches
+    description: Impressum und AGB. Der eigentliche Text steht im Fließtext-Feld.
+    files:
+      - name: impressum
+        label: Impressum
+        file: src/content/legal/impressum.md
+        format: yaml-frontmatter
+        preview: false
+        fields:
+          - { name: title, label: Titel, widget: string }
+          - { name: description, label: Kurzbeschreibung (für Suchmaschinen), widget: text, required: false }
+          - name: updated
+            label: Zuletzt geändert
+            widget: datetime
+            required: false
+            date_format: YYYY-MM-DD
+            time_format: false
+            picker_utc: true
+            format: YYYY-MM-DD
+          - { name: body, label: Fließtext, widget: markdown }
+      - name: agb
+        label: AGB
+        file: src/content/legal/agb.md
+        format: yaml-frontmatter
+        preview: false
+        fields:
+          - { name: title, label: Titel, widget: string }
+          - { name: description, label: Kurzbeschreibung (für Suchmaschinen), widget: text, required: false }
+          - name: updated
+            label: Zuletzt geändert
+            widget: datetime
+            required: false
+            date_format: YYYY-MM-DD
+            time_format: false
+            picker_utc: true
+            format: YYYY-MM-DD
+          - { name: body, label: Fließtext, widget: markdown }

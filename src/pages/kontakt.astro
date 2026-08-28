@@ -1,0 +1,49 @@
+---
+import { getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import MapEmbed from '../components/MapEmbed.astro';
+import ContactSection from '../components/ContactSection.astro';
+
+const contact = await getEntry('contact', 'index');
+if (!contact) {
+  throw new Error('src/content/contact/index.md fehlt.');
+}
+const { hero, intro, locations } = contact.data;
+---
+
+<BaseLayout title="Kontakt" description={intro.text}>
+  <PageHero
+    image={hero.image}
+    eyebrow={hero.eyebrow}
+    title={hero.title}
+    subtitle={hero.subtitle}
+    priority
+  />
+
+  <ContactSection title={intro.title} showLink={false} />
+
+  <section class="relative z-10 bg-ink-950 pb-14">
+    <div class="container-page flex flex-col gap-14">
+      {
+        locations.map((location) => (
+          <div>
+            <SectionHeading title={location.title} text={location.note} />
+            <p class="mt-3 text-center text-lg text-paper-300">
+              {location.street}, {location.postalCode} {location.city}
+            </p>
+            {location.mapUrl && (
+              <div class="mt-6">
+                <MapEmbed
+                  url={location.mapUrl}
+                  title={`Karte: ${location.street}, ${location.postalCode} ${location.city}`}
+                />
+              </div>
+            )}
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>

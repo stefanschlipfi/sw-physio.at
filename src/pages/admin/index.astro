@@ -1,0 +1,30 @@
+---
+/**
+ * Decap CMS – editorial interface.
+ *
+ * Deliberately lives under src/pages/ so /admin/ is reachable in the dev server
+ * too (Astro serves no directory index for folders in public/). The build turns
+ * it into a static dist/admin/index.html.
+ *
+ * The field configuration stays a plain YAML file at public/admin/config.yml
+ * and is loaded by Decap at runtime.
+ */
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link href="config.yml" type="text/yaml" rel="cms-config-url" />
+    <title>Redaktion – Physiotherapie Simon Wechdorn</title>
+  </head>
+  <body>
+    <!-- Decap CMS. The login runs through /oauth/ (see public/oauth/index.php). -->
+    <script
+      src="https://unpkg.com/decap-cms@^3.8.4/dist/decap-cms.js"
+      is:inline></script>
+  </body>
+</html>

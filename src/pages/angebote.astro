@@ -1,0 +1,96 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import PriceCard from '../components/PriceCard.astro';
+import ContactSection from '../components/ContactSection.astro';
+
+const offers = await getEntry('offers', 'index');
+if (!offers) {
+  throw new Error('src/content/offers/index.md fehlt.');
+}
+const { hero, services: servicesText, prices: pricesText } = offers.data;
+
+const services = (await getCollection('services')).sort(
+  (a, b) =>
+    a.data.order - b.data.order ||
+    a.data.title.localeCompare(b.data.title, 'de-AT'),
+);
+
+const prices = (await getCollection('prices')).sort(
+  (a, b) => a.data.order - b.data.order || a.data.price - b.data.price,
+);
+---
+
+<BaseLayout title="Angebote" description={servicesText.text}>
+  <PageHero
+    image={hero.image}
+    eyebrow={hero.eyebrow}
+    title={hero.title}
+    subtitle={hero.subtitle}
+    priority
+  />
+
+  <section class="section-block">
+    <div class="container-page">
+      <SectionHeading
+        eyebrow={servicesText.eyebrow}
+        title={servicesText.title}
+        text={servicesText.text}
+      />
+
+      {
+        services.length > 0 ? (
+          <ul class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {services.map((service) => (
+              <li>
+                <ServiceCard
+                  title={service.data.title}
+                  description={service.data.description}
+                  image={service.data.image}
+                  imageAlt={service.data.imageAlt}
+                />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="mt-10 text-center text-paper-300">
+            Die Behandlungstechniken werden gerade überarbeitet.
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  {
+    prices.length > 0 && (
+      <section class="section-block">
+        <div class="container-page">
+          <SectionHeading
+            eyebrow={pricesText.eyebrow}
+            title={pricesText.title}
+            text={pricesText.text}
+          />
+
+          <ul class="mt-10 flex flex-wrap justify-center gap-5">
+            {prices.map((entry) => (
+              <li class="w-full max-w-xs">
+                <PriceCard
+                  title={entry.data.title}
+                  durationMinutes={entry.data.durationMinutes}
+                  price={entry.data.price}
+                  description={entry.data.description}
+                  highlighted={entry.data.highlighted}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <ContactSection />
+</BaseLayout>

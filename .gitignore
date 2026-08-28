@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+*.log
+
+# Generated from the deployment secrets, never committed.
+public/oauth/config.php
+
+# Referenzprojekt (hegerberg.at) – Vorlage für die Astro- und Decap-Konfiguration,
+# gehört nicht in dieses Repository. Zeile entfernen, falls doch gewünscht.
+/astro-blueprint/
+
+/webflow-export/

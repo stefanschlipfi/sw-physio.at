@@ -1,0 +1,21 @@
+---
+interface Props {
+  /** `src` of the Google-Maps embed. */
+  url: string;
+  /** Named for screen readers – iframes need an accessible name. */
+  title: string;
+}
+
+const { url, title } = Astro.props;
+---
+
+{/* 16:9 box, so the map keeps its shape on every width. */}
+<div class="relative h-0 overflow-hidden rounded-lg pb-[56.25%]">
+  <iframe
+    src={url}
+    title={title}
+    loading="lazy"
+    referrerpolicy="no-referrer-when-downgrade"
+    allowfullscreen
+    class="absolute inset-0 size-full border-0"></iframe>
+</div>

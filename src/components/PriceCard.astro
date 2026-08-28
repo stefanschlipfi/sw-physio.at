@@ -1,0 +1,28 @@
+---
+import { formatPrice } from '../lib/format';
+
+interface Props {
+  title: string;
+  durationMinutes: number;
+  price: number;
+  description?: string;
+  highlighted?: boolean;
+}
+
+const { title, durationMinutes, price, description, highlighted = false } =
+  Astro.props;
+---
+
+<article
+  class:list={[
+    'flex h-full w-full flex-col items-center justify-center gap-2 border-[3px] bg-ink-950 p-6 text-center',
+    highlighted ? 'border-brand-400 shadow-lg shadow-brand-950' : 'border-brand-500',
+  ]}
+>
+  <p class="whitespace-nowrap text-4xl uppercase text-brand-500 sm:text-5xl">
+    {durationMinutes} Min
+  </p>
+  <h3 class="text-xl text-paper-50">{title}</h3>
+  <p class="text-xl font-bold text-paper-50">Preis: {formatPrice(price)}</p>
+  {description && <p class="text-base text-paper-300">{description}</p>}
+</article>

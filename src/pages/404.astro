@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Seite nicht gefunden" description="Diese Seite gibt es nicht.">
+  <div class="container-page flex min-h-[50svh] flex-col items-center justify-center gap-6 py-20 text-center">
+    <p class="text-6xl text-brand-500 sm:text-8xl">404</p>
+    <h1 class="text-2xl text-paper-50 sm:text-4xl">Diese Seite gibt es nicht</h1>
+    <p class="max-w-md text-lg text-paper-300">
+      Die Adresse hat sich vielleicht geändert. Über das Menü oben findest du
+      alles, was es hier gibt.
+    </p>
+    <a href="/" class="btn-primary">Zur Startseite</a>
+  </div>
+</BaseLayout>

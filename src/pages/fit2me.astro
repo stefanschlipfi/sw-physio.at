@@ -1,0 +1,70 @@
+---
+import { getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import ImageSlider from '../components/ImageSlider.astro';
+import ContactSection from '../components/ContactSection.astro';
+
+const fit2me = await getEntry('fit2me', 'index');
+if (!fit2me) {
+  throw new Error('src/content/fit2me/index.md fehlt.');
+}
+const { hero, intro, gallery, partner } = fit2me.data;
+---
+
+<BaseLayout title="Fit2me" description={intro.text ?? intro.title}>
+  <PageHero
+    image={hero.image}
+    eyebrow={hero.eyebrow}
+    title={hero.title}
+    subtitle={hero.subtitle}
+    priority
+  />
+
+  <section class="section-block">
+    <div class="container-page grid gap-4 md:grid-cols-2">
+      {
+        intro.image && (
+          <div class="overflow-hidden rounded-lg">
+            <img
+              src={intro.image}
+              alt={intro.imageAlt ?? ''}
+              loading="eager"
+              decoding="async"
+              class="aspect-[4/3] size-full object-cover"
+            />
+          </div>
+        )
+      }
+
+      <div class="panel-start">
+        <h2 class="text-xl leading-snug text-paper-50 sm:text-2xl">
+          {intro.title}
+        </h2>
+        {intro.text && <p class="prose-page mt-4 text-paper-300">{intro.text}</p>}
+      </div>
+    </div>
+  </section>
+
+  {gallery.length > 0 && <ImageSlider slides={gallery} />}
+
+  {
+    partner.url && (
+      <section class="section-block">
+        <div class="container-page flex flex-col items-center gap-4 text-center">
+          <p class="text-2xl text-paper-50">{partner.label}</p>
+          <a
+            href={partner.url}
+            rel="noopener noreferrer"
+            target="_blank"
+            class="btn-primary"
+          >
+            Fit2me öffnen
+          </a>
+        </div>
+      </section>
+    )
+  }
+
+  <ContactSection />
+</BaseLayout>

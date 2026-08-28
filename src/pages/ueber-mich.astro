@@ -1,0 +1,75 @@
+---
+import { getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import ResumeTimeline from '../components/ResumeTimeline.astro';
+import ContactSection from '../components/ContactSection.astro';
+
+const about = await getEntry('about', 'index');
+if (!about) {
+  throw new Error('src/content/about/index.md fehlt.');
+}
+const { hero, intro, resume } = about.data;
+---
+
+<BaseLayout title="Über mich" description={intro.text}>
+  <PageHero
+    image={hero.image}
+    eyebrow={hero.eyebrow}
+    title={hero.title}
+    subtitle={hero.subtitle}
+    priority
+  />
+
+  <section class="section-block">
+    <div class="container-page grid gap-4 md:grid-cols-2">
+      {
+        intro.image && (
+          <div class="overflow-hidden rounded-lg">
+            <img
+              src={intro.image}
+              alt={intro.imageAlt ?? ''}
+              loading="eager"
+              decoding="async"
+              class="aspect-[3/4] size-full object-cover"
+            />
+          </div>
+        )
+      }
+
+      <div class="panel-start">
+        <h2 class="text-2xl leading-snug text-paper-50 sm:text-3xl">
+          {intro.title}
+        </h2>
+        {
+          intro.text && (
+            <p class="prose-page mt-4 text-paper-300">{intro.text}</p>
+          )
+        }
+      </div>
+
+      {
+        resume.image && (
+          <div class="overflow-hidden rounded-lg md:order-last">
+            <img
+              src={resume.image}
+              alt={resume.imageAlt ?? ''}
+              loading="lazy"
+              decoding="async"
+              class="aspect-[3/4] size-full object-cover"
+            />
+          </div>
+        )
+      }
+
+      <div class="panel-end">
+        <h2 class="text-2xl leading-snug text-paper-50 sm:text-3xl">
+          {resume.title}
+        </h2>
+        <ResumeTimeline entries={resume.entries} />
+      </div>
+    </div>
+  </section>
+
+  <ContactSection />
+</BaseLayout>

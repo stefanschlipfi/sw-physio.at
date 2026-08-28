@@ -1,0 +1,108 @@
+---
+import { site, phoneHref, addressOneLine } from '../lib/site';
+import { getOpeningHours, summarizeOpeningHours } from '../lib/opening-hours';
+
+interface Props {
+  title?: string;
+  /** Hides the "Mehr" button on the contact page itself. */
+  showLink?: boolean;
+}
+
+const { title = 'Termin vereinbaren', showLink = true } = Astro.props;
+
+const summary = summarizeOpeningHours(await getOpeningHours());
+
+const channels = [
+  {
+    icon: '/images/icons/location.png',
+    iconAlt: '',
+    label: 'Standort:',
+    lines: [site.address.street, `${site.address.postalCode} ${site.address.city}`],
+    href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addressOneLine)}`,
+    external: true,
+  },
+  {
+    icon: '/images/icons/phone.png',
+    iconAlt: '',
+    label: 'Telefon:',
+    lines: [site.phoneDisplay],
+    href: phoneHref,
+    external: false,
+  },
+  {
+    icon: '/images/icons/mail.png',
+    iconAlt: '',
+    label: 'Mail:',
+    lines: [site.email],
+    href: `mailto:${site.email}`,
+    external: false,
+  },
+  {
+    icon: '/images/icons/instagram.png',
+    iconAlt: '',
+    label: 'Instagram:',
+    lines: [site.social.instagramHandle],
+    href: site.social.instagram,
+    external: true,
+  },
+];
+---
+
+<section class="section-block">
+  <div class="container-page flex flex-col items-center gap-6">
+    <h2 class="text-3xl leading-tight text-paper-50 sm:text-4xl">{title}</h2>
+
+    <div class="text-center text-lg text-paper-300">
+      <p class="font-bold text-paper-50">Öffnungszeiten:</p>
+      {
+        summary.length > 0 ? (
+          summary.map((line) => (
+            <p>
+              {line.days}: {line.hours}
+            </p>
+          ))
+        ) : (
+          <p>Termine nur nach Vereinbarung</p>
+        )
+      }
+    </div>
+
+    <ul
+      class="grid w-full grid-cols-1 divide-y divide-brand-500/40 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x"
+    >
+      {
+        channels.map((channel) => (
+          <li>
+            <a
+              href={channel.href}
+              rel={channel.external ? 'noopener noreferrer' : undefined}
+              target={channel.external ? '_blank' : undefined}
+              class="card h-full transition hover:text-brand-500"
+            >
+              <img
+                src={channel.icon}
+                alt={channel.iconAlt}
+                width="100"
+                height="50"
+                loading="lazy"
+                decoding="async"
+                class="h-12 w-auto object-contain"
+              />
+              <p class="text-xl font-bold text-paper-50">{channel.label}</p>
+              <p class="text-lg text-paper-300">
+                {channel.lines.map((line, index) => (
+                  <>
+                    {index > 0 && <br />}
+                    {line}
+                  </>
+                ))}
+              </p>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    {showLink && <a href="/kontakt/" class="btn-primary mt-2">Mehr</a>}
+  </div>
+</section>

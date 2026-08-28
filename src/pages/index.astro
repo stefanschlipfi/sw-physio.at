@@ -1,0 +1,116 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import FaqAccordion from '../components/FaqAccordion.astro';
+import ImageSlider from '../components/ImageSlider.astro';
+import ContactSection from '../components/ContactSection.astro';
+
+/** Editorial texts of the home page (Decap collection „Startseite“). */
+const home = await getEntry('home', 'index');
+if (!home) {
+  throw new Error('src/content/home/index.md fehlt.');
+}
+const { hero, welcome, teasers, faq: faqText, gallery: galleryText } = home.data;
+
+const questions = (await getCollection('faq'))
+  .sort((a, b) => a.data.order - b.data.order)
+  .map((entry) => entry.data);
+
+const slides = (await getCollection('gallery'))
+  .sort((a, b) => a.data.order - b.data.order)
+  .map((entry) => ({
+    image: entry.data.image,
+    imageAlt: entry.data.imageAlt ?? entry.data.title,
+    title: entry.data.title,
+  }));
+---
+
+<BaseLayout description={home.data.hero.subtitle ?? undefined}>
+  <PageHero
+    image={hero.image}
+    eyebrow={hero.eyebrow}
+    title={hero.title}
+    subtitle={hero.subtitle}
+    size="full"
+    priority
+  />
+
+  <section class="section-block">
+    <div class="container-page">
+      <SectionHeading
+        eyebrow={welcome.eyebrow}
+        title={welcome.title}
+        text={welcome.text}
+        ruled
+      />
+
+      {/*
+        The Webflow grid alternated image and text box. Each teaser is its own
+        two-column row here, so `order` only ever reshuffles that one row – on a
+        single grid across all teasers it would reorder the whole list.
+      */}
+      <ul class="mt-10 flex flex-col gap-4">
+        {
+          teasers.map((teaser, index) => (
+            <li class="grid gap-4 md:grid-cols-2">
+              <div
+                class:list={[
+                  'overflow-hidden rounded-lg',
+                  index % 2 === 1 && 'md:order-2',
+                ]}
+              >
+                <img
+                  src={teaser.image}
+                  alt={teaser.imageAlt ?? ''}
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  decoding="async"
+                  class="aspect-[4/3] size-full object-cover"
+                />
+              </div>
+              <div class:list={[index % 2 === 1 ? 'panel-end' : 'panel-start']}>
+                <h2 class="text-2xl leading-snug text-paper-50 sm:text-3xl">
+                  {teaser.title}
+                </h2>
+                {teaser.subtitle && (
+                  <p class="text-2xl text-brand-500">{teaser.subtitle}</p>
+                )}
+                <a href={teaser.href} class="btn-primary mt-4 self-start">
+                  {teaser.linkLabel}
+                </a>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  {
+    questions.length > 0 && (
+      <section class="section-block">
+        <div class="container-page">
+          <SectionHeading
+            eyebrow={faqText.eyebrow}
+            title={faqText.title}
+            text={faqText.text}
+          />
+          <div class="mt-10">
+            <FaqAccordion entries={questions} />
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    slides.length > 0 && (
+      <section class="relative z-10 bg-ink-950">
+        <ImageSlider slides={slides} caption={galleryText.title} />
+      </section>
+    )
+  }
+
+  <ContactSection />
+</BaseLayout>

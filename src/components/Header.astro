@@ -1,0 +1,107 @@
+---
+import { navigation, site } from '../lib/site';
+
+const path = Astro.url.pathname;
+
+const isActive = (href: string) =>
+  href === '/' ? path === '/' : path.startsWith(href);
+---
+
+{/* Fixed and black, the way the Webflow navbar sat above the hero. */}
+<header class="fixed inset-x-0 top-0 z-50 bg-ink-950">
+  <div class="container-page flex items-center justify-between gap-4 py-3">
+    <a href="/" class="flex shrink-0 items-center" aria-label={`${site.name} – Startseite`}>
+      {/* Rendered 54 px high; logo.png is twice that for retina screens. */}
+      <img
+        src="/logo.png"
+        alt=""
+        width="434"
+        height="122"
+        class="h-11 w-auto sm:h-[3.375rem]"
+      />
+    </a>
+
+    <nav aria-label="Hauptnavigation" class="hidden lg:block">
+      <ul class="flex items-center gap-8">
+        {
+          navigation.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                class:list={[
+                  'text-2xl transition',
+                  isActive(item.href)
+                    ? 'text-brand-500'
+                    : 'text-paper-50 hover:text-brand-500',
+                ]}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <button
+      type="button"
+      data-menu-toggle
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      class="grid size-11 place-items-center text-paper-50 transition hover:text-brand-500 lg:hidden"
+    >
+      <span class="sr-only">Menü öffnen</span>
+      <svg
+        class="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <path d="M4 7h16M4 12h16M4 17h16"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div id="mobile-menu" hidden class="border-t border-brand-500/40 lg:hidden">
+    <nav aria-label="Navigation (mobil)" class="container-page py-4">
+      <ul class="flex flex-col">
+        {
+          navigation.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                class:list={[
+                  'block py-3 text-xl transition',
+                  isActive(item.href)
+                    ? 'text-brand-500'
+                    : 'text-paper-50 hover:text-brand-500',
+                ]}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = document.getElementById('mobile-menu');
+
+  toggle?.addEventListener('click', () => {
+    if (!menu) return;
+    const open = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!open));
+    menu.hidden = open;
+    const label = toggle.querySelector('.sr-only');
+    if (label) label.textContent = open ? 'Menü öffnen' : 'Menü schließen';
+  });
+</script>

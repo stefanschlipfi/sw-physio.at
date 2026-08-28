@@ -1,0 +1,56 @@
+---
+import { renderMarkdown } from '../lib/markdown';
+
+interface Props {
+  entries: { question: string; answer: string }[];
+}
+
+const { entries } = Astro.props;
+
+const items = await Promise.all(
+  entries.map(async (entry) => ({
+    question: entry.question,
+    answer: await renderMarkdown(entry.answer),
+  })),
+);
+---
+
+{/*
+  <details> replaces the Webflow dropdown widget – same look, but it works
+  without JavaScript and is keyboard accessible out of the box.
+*/}
+<ul class="mx-auto flex max-w-3xl flex-col gap-4">
+  {
+    items.map((item) => (
+      <li>
+        <details class="group rounded-lg bg-ink-950 p-4">
+          <summary
+            class="flex cursor-pointer list-none items-center justify-between gap-4 border-b-2 border-brand-500 pb-2 text-left text-xl text-paper-50 marker:hidden"
+          >
+            {item.question}
+            <svg
+              class="size-5 shrink-0 text-brand-500 transition-transform duration-300 group-open:rotate-180"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </summary>
+          <div class="prose-page mt-3" set:html={item.answer} />
+        </details>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  /* Safari still draws the disclosure triangle without this. */
+  summary::-webkit-details-marker {
+    display: none;
+  }
+</style>

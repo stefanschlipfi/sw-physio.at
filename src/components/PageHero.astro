@@ -1,0 +1,62 @@
+---
+interface Props {
+  /** Background image from /public. */
+  image?: string;
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  /** The home page hero is taller than the ones of the sub-pages. */
+  size?: 'full' | 'compact';
+  /** Loads the image eagerly – set on the first hero of a page. */
+  priority?: boolean;
+}
+
+const {
+  image = '/images/uploads/hero-home.jpg',
+  eyebrow,
+  title,
+  subtitle,
+  size = 'compact',
+  priority = false,
+} = Astro.props;
+
+const height = size === 'full' ? 'h-[80svh] min-h-[32rem]' : 'h-[55svh] min-h-96';
+---
+
+{/*
+  The Webflow layout parked the hero in a taller wrapper and pulled the next
+  section over it (`.sectionbegin` was 140vh with a -70vh margin), so the hero
+  stays put while the content scrolls across it. `sticky` plus `z-0` does the
+  same here – every section that follows carries `.section-block`, which sits
+  on `z-10` with an opaque background and therefore slides over the hero.
+*/}
+<section class:list={['sticky top-0 z-0 flex items-center overflow-hidden', height]}>
+  <img
+    src={image}
+    alt=""
+    aria-hidden="true"
+    loading={priority ? 'eager' : 'lazy'}
+    fetchpriority={priority ? 'high' : undefined}
+    decoding="async"
+    class="absolute inset-0 size-full object-cover"
+  />
+  <div class="absolute inset-0 bg-ink-950/25"></div>
+
+  <div class="container-page relative py-16 text-center">
+    {eyebrow && <p class="eyebrow [text-shadow:0_2px_14px_rgb(0_0_0/0.85)]">{eyebrow}</p>}
+    {/* The heroes are photographs with bright areas – the shadow keeps the
+        headline readable without darkening the picture much. */}
+    <h1
+      class="mt-3 text-5xl font-normal leading-tight text-brand-500 [text-shadow:0_2px_14px_rgb(0_0_0/0.85)] sm:text-6xl lg:text-7xl"
+    >
+      {title}
+    </h1>
+    {
+      subtitle && (
+        <p class="mx-auto mt-4 max-w-3xl text-2xl leading-snug text-paper-50 [text-shadow:0_2px_14px_rgb(0_0_0/0.85)] sm:text-3xl">
+          {subtitle}
+        </p>
+      )
+    }
+  </div>
+</section>

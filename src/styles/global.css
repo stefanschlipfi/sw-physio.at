@@ -1,0 +1,159 @@
+/*
+ * `source(none)` switches the automatic source detection off and `@source`
+ * points it at src/ alone. Otherwise Tailwind also scans `astro-blueprint/`
+ * and `webflow-export/` and ships their classes with the build.
+ */
+@import 'tailwindcss' source(none);
+@source '../../src';
+
+/*
+ * Colour world of the original Webflow design: black page, warm orange accent
+ * (#ce6707 was `--brand` there), near-white text (#f3f3f3) and a muted grey for
+ * secondary lines (#999).
+ */
+@theme {
+  --color-ink-950: #000000;
+  --color-ink-900: #0a0a0b;
+  --color-ink-800: #121313;
+  --color-ink-700: #1c1d1f;
+  --color-ink-600: #2b2b2b;
+  --color-ink-500: #43464d;
+
+  --color-paper-50: #f3f3f3;
+  --color-paper-100: #e7e7e7;
+  --color-paper-200: #c9c9c9;
+  --color-paper-300: #999999;
+  --color-paper-400: #727272;
+
+  --color-brand-50: #fdf3e9;
+  --color-brand-100: #ffe3ca;
+  --color-brand-200: #f6c496;
+  --color-brand-300: #f0a05c;
+  --color-brand-400: #e88232;
+  --color-brand-500: #ce6707;
+  --color-brand-600: #b25806;
+  --color-brand-700: #8f4705;
+  --color-brand-800: #6b3504;
+  --color-brand-900: #4a2503;
+  --color-brand-950: #2a1502;
+
+  --font-sans: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'PT Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* The fixed header must not cover an anchor target. */
+    scroll-padding-top: 6rem;
+  }
+
+  body {
+    @apply bg-ink-950 text-paper-50 font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-sans font-bold tracking-tight;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+}
+
+/* Defined as @utility so the variants below can @apply them. */
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 border-2 px-6 py-3
+         text-base font-normal uppercase tracking-[0.125em] transition
+         focus-visible:outline-2 focus-visible:outline-offset-2;
+}
+
+/* Content box with the orange edge the Webflow `.box` / `.box-2` had. */
+@utility panel {
+  @apply flex h-full flex-col justify-center gap-2 bg-ink-950 p-6 sm:p-8;
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+  }
+
+  /*
+   * Every content section below a hero. The opaque background and `z-10` are
+   * what make the sticky hero disappear behind them while scrolling.
+   */
+  .section-block {
+    @apply relative z-10 bg-ink-950 py-14;
+  }
+
+  /* The Webflow button: transparent, 2 px orange border, wide letter spacing. */
+  .btn-primary {
+    @apply btn border-brand-500 bg-transparent text-brand-500
+           hover:border-brand-400 hover:bg-brand-500 hover:text-ink-950
+           focus-visible:outline-brand-500;
+  }
+
+  .btn-secondary {
+    @apply btn border-paper-50/70 bg-transparent text-paper-50
+           hover:bg-paper-50 hover:text-ink-950 focus-visible:outline-paper-50;
+  }
+
+  .panel-start {
+    @apply panel border-l-[3px] border-brand-500;
+  }
+
+  .panel-end {
+    @apply panel border-r-[3px] border-brand-500;
+  }
+
+  .card {
+    @apply flex flex-col items-center justify-center gap-2 rounded-lg
+           bg-ink-950 p-6 text-center;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.25em] text-brand-500;
+  }
+
+  /* Body copy of the original design (`.paragraph2`). */
+  .prose-page {
+    @apply text-base leading-relaxed text-paper-50 sm:text-lg;
+  }
+
+  .prose-page :where(p, ul, ol) {
+    @apply mt-4 first:mt-0;
+  }
+
+  .prose-page :where(h2) {
+    @apply mt-10 text-2xl first:mt-0;
+  }
+
+  .prose-page :where(h3) {
+    @apply mt-8 text-xl first:mt-0;
+  }
+
+  .prose-page :where(ul) {
+    @apply list-disc space-y-1 pl-6;
+  }
+
+  .prose-page :where(ol) {
+    @apply list-decimal space-y-1 pl-6;
+  }
+
+  .prose-page :where(a) {
+    @apply text-brand-500 underline underline-offset-4 hover:text-brand-400;
+  }
+
+  .prose-page :where(strong) {
+    @apply font-bold text-paper-50;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

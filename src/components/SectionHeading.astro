@@ -1,0 +1,31 @@
+---
+export interface Props {
+  eyebrow?: string;
+  title: string;
+  text?: string;
+  /** Draws the two horizontal rules left and right of the title. */
+  ruled?: boolean;
+  /** Heading level, so the document outline stays correct. */
+  as?: 'h1' | 'h2' | 'h3';
+}
+
+const { eyebrow, title, text, ruled = false, as: Tag = 'h2' } = Astro.props;
+---
+
+<div class="text-center">
+  {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+
+  <div class:list={['flex items-center justify-center gap-5', ruled && 'mt-2']}>
+    {ruled && <span class="h-0.5 flex-1 bg-paper-50" aria-hidden="true" />}
+    <Tag class="text-2xl leading-tight text-paper-50 sm:text-4xl">{title}</Tag>
+    {ruled && <span class="h-0.5 flex-1 bg-paper-50" aria-hidden="true" />}
+  </div>
+
+  {
+    text && (
+      <p class="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-paper-300 sm:text-lg">
+        {text}
+      </p>
+    )
+  }
+</div>
