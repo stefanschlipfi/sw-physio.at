@@ -41,12 +41,12 @@ export const site = {
 
   phone: '+436605636807',
   phoneDisplay: '0660 / 563 68 07',
-  email: 'PLATZHALTER@sw-physio.at',
+  email: 'simon.wechdorn@gmail.com',
 
   /** An empty string hides the respective link. */
   social: {
     instagram: 'https://www.instagram.com/sw_physio/',
-    instagramHandle: 'sw_physio',
+    instagramHandle: '@sw_physio',
   },
 
   legal: {
